@@ -1,0 +1,4 @@
+tier,channel_span,bits,bands,max_step_dE00,vol_x_doubling,vol_x_packed,rt_max_dE00,rt_rms_dE00,bits_for_step_criterion,bits_for_bandcount_criterion
+narrow 窄范围,0.03137254901960784,9,17,0.1949,2.0,2.0,0.0975,0.0549,9,13
+medium 中范围,0.25098039215686274,9,129,0.1984,2.0,2.0,0.0992,0.0526,9,10
+full 全色域,1.0,9,511,0.1984,2.0,2.0,0.0988,0.0435,9,8
