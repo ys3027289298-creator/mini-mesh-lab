@@ -1,0 +1,7 @@
+# build outputs
+collision/collision
+collision/bench
+collision/bench_ext
+bbox/bbox
+normal/normal
+welded/welded
