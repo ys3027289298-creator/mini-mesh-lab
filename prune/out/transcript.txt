@@ -1,0 +1,43 @@
+  low    nv=12288 nf=24130  dead slots pos/nrm/uv/col = 0/0/0/0   (vertex-criterion: 0/0/0/0)
+         roundtrip_from_disk_equal=1  attrs_equal=1
+  medium nv=12288 nf=24130  dead slots pos/nrm/uv/col = 0/9216/9216/9216   (vertex-criterion: 0/0/0/0)
+         roundtrip_from_disk_equal=1  attrs_equal=1
+  high   nv=12288 nf=24130  dead slots pos/nrm/uv/col = 0/24576/24576/24576   (vertex-criterion: 0/0/0/0)
+         roundtrip_from_disk_equal=1  attrs_equal=1
+
+== A. 3 models x 12 numbers ==
+  model | attribute bytes | redundancy share | size after prune (B) | render diff (pixels / maxΔ)
+  low   |          245760 |             0.0% |               824920 | 0 px / 0
+  medium |          540672 |            54.5% |               824920 | 0 px / 0
+  high  |         1032192 |            76.2% |               824920 | 0 px / 0
+
+== B. counts side by side: attribute stream vs vertex stream (dead slots) ==
+  model  | dead slots by own attribute index  | dead slots by vertex index (wrong)
+  low    | nrm=0      uv=0      col=0      | nrm=0      uv=0      col=0     
+  medium | nrm=9216   uv=9216   col=9216   | nrm=0      uv=0      col=0     
+  high   | nrm=24576  uv=24576  col=24576  | nrm=0      uv=0      col=0     
+
+== C. applying the same rule through the vertex stream ==
+  model  | file before | file (attr idx) | file (vertex idx) | vertex idx drop | render same?
+  low    |      824920 |         824920 |           824920 |             0% |          yes
+  medium |     1119832 |         824920 |          1119832 |             0% |          yes
+  high   |     1611352 |         824920 |          1611352 |             0% |          yes
+  -> the highest-redundancy tier under the vertex-index rule: SIZE DOES NOT DROP (rule is counting the wrong index)
+
+== C2. negative control: also dropping every 7th referenced slot ==
+  model  | render diff px |            max delta | criterion-2
+  low    |         188447 |                  1.1 | fails (good)
+  medium |         188888 |                  1.1 | fails (good)
+  high   |         188888 |                  1.1 | fails (good)
+  -> this is what makes criterion 2 non-vacuous: remove one referenced slot and pixels move.
+
+== D. redundancy share vs compressibility (two different quantities) ==
+  model  |     red% |  attr saved% | file saved% |  gzip before | gzip after |  gz saved%
+  low    |     0.0% |         0.0% |       0.0% |       399157 |     399156 |       0.0%
+  medium |    54.5% |        54.5% |      26.3% |       657292 |     398903 |      39.3%
+  high   |    76.2% |        76.2% |      48.8% |      1067548 |     398901 |      62.6%
+  note: attr saved = redundant bytes; file saved is smaller because the four index
+        streams (579120 B) are unchanged.  gzip saved is a third quantity: it also counts
+        how much of the SURVIVING data the encoder could already squeeze, which pruning
+        never touches.  Redundancy rate is a property of the asset; compressibility is
+        a property of the byte stream; how much you save by pruning is neither.
