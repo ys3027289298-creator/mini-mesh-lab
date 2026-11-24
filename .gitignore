@@ -1,0 +1,7 @@
+# build artifacts
+/welded/welded
+/welded/welded_san
+/normal/normal
+/bbox/bbox
+*.o
+*.out
