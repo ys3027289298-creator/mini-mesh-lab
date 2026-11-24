@@ -1,0 +1,56 @@
+# proxy: distance-clustered collision proxies (AABB | convex hull)
+model=2D top-down OBBs, monotone-chain hull, 512 ray probes/frame
+cluster_r=4.20  criteria: C<=0.60 AND T<=1.80 -> hull else AABB
+narrow_budget=8192 tests/frame, miss frames=120, timing best-of-5 x 120 frames
+
+== nine numbers, correct concavity criterion ==
+density objects proxies hull/box C_act T_act  proxy_us naive_us speedup misses/120f worst
+low     71      17    0/17  0.762  2.57      71.6    162.3   2.27x      0     0
+mid    253      16    0/16  0.630  1.38      81.7    439.8   5.39x      0     0
+high   387      17    9/8   0.472  1.07      99.0    757.6   7.66x      0     0
+NINE_proxies=17,16,17
+NINE_collision_us_per_frame=71.6,81.7,99.0
+NINE_misses=0,0,0
+
+== actual concavity/tightness vs selected proxy shape ==
+tier C_act T_act C_gate T_gate | correct tier-shape (hull/box) | inverted tier-shape (hull/box)
+low   0.762 2.57 fail   fail   | bbox ( 0/17)            | bbox ( 0/17)
+mid   0.630 1.38 fail   pass   | bbox ( 0/16)            | hull ( 9/7 )
+high  0.472 1.07 pass   pass   | hull ( 9/8 )            | bbox ( 0/17)
+
+== inverted concavity control (C >= 0.60 AND T <= 1.80 -> hull) ==
+density hull/box proxy_us misses/120f worst
+low      0/17       70.4      0     0
+mid      9/7        84.5      0     0
+high     0/17      103.5   1301    48
+diagnostic_inverted_high_density_is_worst=1
+diagnostic_correct_high_density_is_worst=0
+
+== narrow-phase demand on benchmark frame 0 (correct / inverted) ==
+low   narrow_tests=2357 / 2357
+mid   narrow_tests=6056 / 4820
+high  narrow_tests=6739 / 8846
+
+check_hull_square_4verts                =1
+check_hull_square_area_one              =1
+check_ray_hits_box                      =1
+check_ray_misses_box                    =1
+check_criteria_both_pass_hull           =1
+check_criteria_high_concavity_box       =1
+check_criteria_loose_arrangement_box    =1
+check_criteria_are_AND                  =1
+check_inverted_flips_concavity_gate     =1
+check_concavity_sparse_gt_filled        =1
+check_concavity_gate_direction_sane     =1
+check_tier_concavity_monotone           =1
+check_tier_tightness_monotone           =1
+check_proxy_count_compresses_objects    =1
+check_high_density_correct_picks_hulls  =1
+check_conservative_proxies_no_geometric_FN=1
+check_correct_budget_meets_zero_misses  =1
+check_diag_inverted_high_density_worst  =1
+check_diag_correct_rule_not_high_worst  =1
+check_inverted_box_wastes_narrow_phase  =1
+check_timing_measured                   =1
+
+all_ok=1
